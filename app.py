@@ -40,7 +40,7 @@ def prepare_database(file_path):
     return df, sangkien_list, semantic_embeddings, vectorizer, tfidf_matrix
 
 # Thực thi tải dữ liệu
-file_name = "list.xls - Data.csv"
+file_name = "list.xls"
 try:
     df, texts, semantic_db, tfidf_vec, tfidf_db = prepare_database(file_name)
     st.sidebar.success(f"📚 Cơ sở dữ liệu: {len(df)} sáng kiến")
