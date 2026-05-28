@@ -16,7 +16,7 @@ from admin_utils import (
 )
 
 # --- 1. Cấu hình giao diện ---
-st.set_page_config(page_title="Hệ thống Tra cứu Sáng kiến và Đề tài NCKH - Hybrid AI", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="Hệ thống Tra cứu tên Sáng kiến và Đề tài NCKH", page_icon="🚀", layout="wide")
 
 # Tạo các folder cần thiết
 create_folders()
@@ -99,7 +99,7 @@ def get_lookup_meta(lookup_type):
 # --- 4. Trang Đăng nhập ---
 def show_login_page():
     """Hiển thị trang đăng nhập"""
-    st.title("🔐 Hệ thống Tra cứu và Quản lý sáng kiến - Đề tài NCKH")
+    st.title("🔐 Hệ thống Tra cứu và Quản lý tên Sáng kiến - Đề tài NCKH")
     
     col1, col2, col3 = st.columns([1, 2, 1])
     
@@ -389,6 +389,15 @@ def show_admin_dashboard():
                 st.metric(
                     "🕒 Cập nhật lần cuối",
                     pd.to_datetime(file_stat.st_mtime, unit='s').strftime('%d/%m/%Y %H:%M')
+                )
+
+            with open(data_file, 'rb') as f:
+                st.download_button(
+                    label=f"📥 Download file dữ liệu hiện tại ({cfg['title']})",
+                    data=f.read(),
+                    file_name=os.path.basename(data_file),
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key=f"admin_download_data_{lookup_type}"
                 )
         else:
             st.warning(
