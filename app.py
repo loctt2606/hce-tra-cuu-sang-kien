@@ -99,7 +99,7 @@ def get_lookup_meta(lookup_type):
 # --- 4. Trang Đăng nhập ---
 def show_login_page():
     """Hiển thị trang đăng nhập"""
-    st.title("🔐 Hệ thống Tra cứu và Quản lý sáng kiến và đề tài NCKH")
+    st.title("🔐 Hệ thống Tra cứu và Quản lý sáng kiến - Đề tài NCKH")
     
     col1, col2, col3 = st.columns([1, 2, 1])
     
@@ -375,6 +375,74 @@ def show_admin_dashboard():
         meta = get_lookup_meta(lookup_type)
         cfg = meta['cfg']
         entity_label = meta['entity_label']
+        data_file = cfg['old_file']
+
+        st.markdown("### 🗂️ Tệp dữ liệu hiện tại")
+        if os.path.exists(data_file):
+            file_stat = os.stat(data_file)
+            col_file_1, col_file_2, col_file_3 = st.columns(3)
+            with col_file_1:
+                st.metric("📄 Tên file", data_file)
+            with col_file_2:
+                st.metric("📦 Dung lượng", f"{file_stat.st_size / 1024:.1f} KB")
+            with col_file_3:
+                st.metric(
+                    "🕒 Cập nhật lần cuối",
+                    pd.to_datetime(file_stat.st_mtime, unit='s').strftime('%d/%m/%Y %H:%M')
+                )
+        else:
+            st.warning(
+                f"⚠️ Chưa có file dữ liệu '{data_file}' cho {cfg['title']}. "
+                "Vui lòng upload file mới bên dưới."
+            )
+
+        st.markdown("### 📤 Upload file mới")
+        replacement_file = st.file_uploader(
+            f"Chọn file Excel mới cho {cfg['title']} (sẽ ghi đè dữ liệu cũ):",
+            type=['xls', 'xlsx'],
+            key=f"admin_replace_data_{lookup_type}"
+        )
+
+        if st.button("📥 Lưu file mới", key=f"admin_save_replacement_{lookup_type}"):
+            if replacement_file is None:
+                st.warning("⚠️ Vui lòng chọn file trước khi lưu.")
+            else:
+                try:
+                    with open(data_file, 'wb') as f:
+                        f.write(replacement_file.getbuffer())
+
+                    # Xóa cache để dữ liệu vừa thay thế được tải lại ngay.
+                    prepare_database.clear()
+                    st.session_state.analysis_results_by_type.pop(lookup_type, None)
+                    st.session_state.analysis_meta_by_type.pop(lookup_type, None)
+
+                    st.success(f"✅ Đã cập nhật dữ liệu thành công vào file '{data_file}'.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Không thể lưu file mới: {str(e)}")
+
+        st.markdown("### 🗑️ Xóa dữ liệu cũ")
+        confirm_delete = st.checkbox(
+            f"Tôi xác nhận muốn xóa file '{data_file}'",
+            key=f"admin_confirm_delete_{lookup_type}"
+        )
+
+        if st.button("🧹 Xóa file dữ liệu", key=f"admin_delete_data_{lookup_type}"):
+            if not confirm_delete:
+                st.warning("⚠️ Vui lòng tick xác nhận trước khi xóa dữ liệu.")
+            elif not os.path.exists(data_file):
+                st.info("ℹ️ File dữ liệu hiện tại không tồn tại.")
+            else:
+                try:
+                    os.remove(data_file)
+                    prepare_database.clear()
+                    st.session_state.analysis_results_by_type.pop(lookup_type, None)
+                    st.session_state.analysis_meta_by_type.pop(lookup_type, None)
+
+                    st.success(f"✅ Đã xóa file dữ liệu '{data_file}'.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Không thể xóa file dữ liệu: {str(e)}")
 
         data = prepare_database(cfg['old_file'], tuple(cfg['name_columns']))
 
@@ -413,8 +481,9 @@ def show_admin_dashboard():
             else:
                 st.info("Không tìm thấy cột tác giả/chủ nhiệm để thống kê.")
         else:
-            st.error(
-                f"❌ Không đọc được file dữ liệu '{cfg['old_file']}' cho loại {cfg['title']}."
+            st.info(
+                f"ℹ️ Chưa thể đọc dữ liệu từ '{cfg['old_file']}'. "
+                "Bạn có thể upload file mới ở mục phía trên."
             )
     
     # --- Page 3: Đăng xuất ---
