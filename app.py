@@ -16,7 +16,7 @@ from admin_utils import (
 )
 
 # --- 1. Cấu hình giao diện ---
-st.set_page_config(page_title="Hệ thống Tra cứu tên Sáng kiến và Đề tài NCKH", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="Tra cứu tên Sáng kiến - tên Đề tài NCKH tại HCE", page_icon="🚀", layout="wide")
 
 # Tạo các folder cần thiết
 create_folders()
