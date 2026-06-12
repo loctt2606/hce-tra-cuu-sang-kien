@@ -99,7 +99,7 @@ def get_lookup_meta(lookup_type):
 # --- 4. Trang Đăng nhập ---
 def show_login_page():
     """Hiển thị trang đăng nhập"""
-    st.title("🔐 Hệ thống Tra cứu và Quản lý tên Sáng kiến - Đề tài NCKH")
+    st.title("🔐 Tra cứu tên Sáng kiến - tên Đề tài NCKH tại HCE")
     
     col1, col2, col3 = st.columns([1, 2, 1])
     
